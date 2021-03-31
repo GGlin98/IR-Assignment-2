@@ -1,0 +1,5 @@
+.idea
+HillaryEmails
+output.txt
+*.pkl
+__pycache__
