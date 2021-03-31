@@ -3,7 +3,7 @@ import pickle
 
 from nltk import word_tokenize, PorterStemmer
 
-from LinkedList import LinkedList, Node
+from LinkedList import LinkedList
 from string import punctuation
 
 PUNCTUATION = punctuation + '-—'
@@ -165,17 +165,12 @@ def inverse(l):
     n = len(docId_to_doc) - 1
     p = l.head
     i = 0
-    prev = -1
-    while p:
-        skip = (prev != p.data - 1)
-        if skip:
-            i = prev + 1
-        while skip and (p.data > i):
+    while p and i <= n:
+        if i < p.data:
             ret.append(i)
-            i += 1
-        prev = p.data
-        p = p.next
-    i = prev + 1
+        else:
+            p = p.next
+        i += 1
     while i <= n:
         ret.append(i)
         i += 1

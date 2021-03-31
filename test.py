@@ -17,21 +17,17 @@ from LinkedList import LinkedList
 #     print(x)
 
 
-def inverse(l, n):
+def inverse(l):
     ret = LinkedList()
+    n = 10
     p = l.head
     i = 0
-    prev = -1
-    while p:
-        skip = (prev != p.data - 1)
-        if skip:
-            i = prev + 1
-        while skip and (p.data > i):
+    while p and i <= n:
+        if i < p.data:
             ret.append(i)
-            i += 1
-        prev = p.data
-        p = p.next
-    i = prev + 1
+        else:
+            p = p.next
+        i += 1
     while i <= n:
         ret.append(i)
         i += 1
@@ -53,5 +49,5 @@ l2.append(6)
 l2.append(7)
 print(l1)
 print(l2)
-print(inverse(l1, 10))
-print(inverse(l2, 10))
+print(inverse(l1))
+print(inverse(l2))
