@@ -113,10 +113,10 @@ def search(term):
             if dictionary[a][2] == term:
                 return a
             else:
-                return -1
+                return None
         elif a > b:
             # Possible?
-            return -1
+            return None
         i = int((a + b) / 2)
 
 
@@ -188,32 +188,35 @@ def query(option, terms):
     terms = set(preprocess(terms))
     indexes = []
     for term in terms:
-        indexes.append(search(term))
+        result = search(term)
+        if result is not None:
+            indexes.append(result)
     indexes.sort(key=lambda i: dictionary[i][0])
     if option == 'and':
-        if -1 in indexes or len(terms) < 2:
+        if len(indexes) < 2:
+            # Only one matched
             return None
-        l1 = dictionary[indexes[0]][1]
-        l2 = dictionary[indexes[1]][1]
+        l1 = dictionary[indexes.pop(0)][1]
+        l2 = dictionary[indexes.pop(0)][1]
         answer = intersect(l1, l2)
-        indexes = indexes[2:]
         while indexes:
-            answer = intersect(answer, dictionary[indexes[0]][1])
-            indexes = indexes[1:]
+            answer = intersect(answer, dictionary[indexes.pop(0)][1])
     elif option == 'or':
-        if -1 in indexes or len(terms) < 2:
+        if len(indexes) < 1:
+            # No matched
             return None
-        l1 = dictionary[indexes[0]][1]
-        l2 = dictionary[indexes[1]][1]
+        elif len(indexes) == 1:
+            # Skip merging
+            return dictionary[indexes.pop(0)][1]
+        l1 = dictionary[indexes.pop(0)][1]
+        l2 = dictionary[indexes.pop(0)][1]
         answer = merge(l1, l2)
-        indexes = indexes[2:]
         while indexes:
-            answer = merge(answer, dictionary[indexes[0]][1])
-            indexes = indexes[1:]
+            answer = merge(answer, dictionary[indexes.pop(0)][1])
     elif option == 'not':
         if len(terms) != 1:
             return None
-        answer = inverse(dictionary[indexes[0]][1])
+        answer = inverse(dictionary[indexes.pop(0)][1])
 
     return answer
 
@@ -264,7 +267,9 @@ else:
     dictionary, docId_to_doc, doc_to_docId = load_data()
 
 # answer = query('and', 'Wednesday Thinking you')
-answer = query('not', 'the')
-# query('and', 'ufo')
+# answer = query('not', 'the')
+answer = query('or', 'libya fuck')
+# answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
+# answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
 print()
