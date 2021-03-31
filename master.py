@@ -160,6 +160,29 @@ def merge(l1, l2):
     return ret
 
 
+def inverse(l):
+    ret = LinkedList()
+    n = len(docId_to_doc) - 1
+    p = l.head
+    i = 0
+    prev = -1
+    while p:
+        skip = (prev != p.data - 1)
+        if skip:
+            i = prev + 1
+        while skip and (p.data > i):
+            ret.append(i)
+            i += 1
+        prev = p.data
+        p = p.next
+    i = prev + 1
+    while i <= n:
+        ret.append(i)
+        i += 1
+
+    return ret
+
+
 def query(option, terms):
     answer = None
     terms = set(preprocess(terms))
@@ -187,6 +210,10 @@ def query(option, terms):
         while indexes:
             answer = merge(answer, dictionary[indexes[0]][1])
             indexes = indexes[1:]
+    elif option == 'not':
+        if len(terms) != 1:
+            return None
+        answer = inverse(dictionary[indexes[0]][1])
 
     return answer
 
@@ -236,5 +263,8 @@ if save:
 else:
     dictionary, docId_to_doc, doc_to_docId = load_data()
 
-answer = query('and', 'Wednesday Thinking you')
+# answer = query('and', 'Wednesday Thinking you')
+answer = query('not', 'the')
 # query('and', 'ufo')
+
+print()

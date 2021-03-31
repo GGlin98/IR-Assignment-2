@@ -17,19 +17,25 @@ from LinkedList import LinkedList
 #     print(x)
 
 
-def intersect(l1, l2):
-    p1 = l1.head
-    p2 = l2.head
+def inverse(l, n):
     ret = LinkedList()
-    while p1 and p2:
-        if p1.data == p2.data:
-            ret.append(p1.data)
-            p1 = p1.next
-            p2 = p2.next
-        elif p1.data < p2.data:
-            p1 = p1.next
-        else:
-            p2 = p2.next
+    p = l.head
+    i = 0
+    prev = -1
+    while p:
+        skip = (prev != p.data - 1)
+        if skip:
+            i = prev + 1
+        while skip and (p.data > i):
+            ret.append(i)
+            i += 1
+        prev = p.data
+        p = p.next
+    i = prev + 1
+    while i <= n:
+        ret.append(i)
+        i += 1
+
     return ret
 
 
@@ -45,5 +51,7 @@ l2.append(3)
 l2.append(4)
 l2.append(6)
 l2.append(7)
-l3 = intersect(l1, l2)
-print(l3)
+print(l1)
+print(l2)
+print(inverse(l1, 10))
+print(inverse(l2, 10))
