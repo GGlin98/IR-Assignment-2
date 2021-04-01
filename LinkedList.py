@@ -36,6 +36,8 @@ class LinkedList:
         # 3. Set next as None
         new_node = Node(new_data)
 
+        self.length += 1
+
         # 4. If the Linked List is empty, then make the
         #    new node as head
         if self.head is None:
@@ -51,8 +53,6 @@ class LinkedList:
 
         # 7. Set tail as new node
         self.tail = new_node
-
-        self.length += 1
 
     def to_list(self):
         ret = []

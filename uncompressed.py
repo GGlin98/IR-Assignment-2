@@ -10,6 +10,18 @@ PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
 
 
+def output(ll):
+    if ll is None:
+        print('No matched document was found')
+        return
+
+    p = ll.head
+    print('Found {} documents:'.format(len(ll)))
+    while p:
+        print(docId_to_doc[p.data])
+        p = p.next
+
+
 def calc_size():
     from sys import getsizeof
     sz = 0
@@ -229,12 +241,12 @@ if save:
 else:
     dictionary, docId_to_doc, doc_to_docId = load_data()
 
-calc_size()
+# calc_size()
 
 # answer = query('and', 'Wednesday Thinking you')
 # answer = query('not', 'the')
-answer = query('or', 'libya fuck')
+# answer = query('or', 'libya fuck')
 # answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
-# answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
+answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
-print(answer)
+output(answer)

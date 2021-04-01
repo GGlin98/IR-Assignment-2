@@ -11,14 +11,41 @@ PORTER = PorterStemmer()
 BLOCKING_K = 4
 
 
+def output(ll):
+    if ll is None:
+        print('No matched document was found')
+        return
+
+    p = ll.head
+    print('Found {} documents:'.format(len(ll)))
+    while p:
+        print(docId_to_doc[vb_to_int(p.data)])
+        p = p.next
+
+
 def calc_size():
     ct = 0
     sz = len(dict_string)
     for x in dictionary:
-        sz += 2  # Frequency in 2 bytes
-        sz += (6 + len(x[1]) * (4 + 3))  # 2 pointers (head & tail), data & next pointer for each element
+        # Frequency in 2 bytes
+        sz += 2
+
+        # 2 pointers (head & tail)
+        sz += 6
+        ll = x[1]
+
+        # Next pointer for each element
+        sz += len(ll) * 3
+
+        p = ll.head
+        while p:
+            # VB code for each element
+            sz += len(p.data)
+            p = p.next
+
         if ct == 0:
-            sz += 3  # pointer to dict_string
+            # pointer to dict_string
+            sz += 3
         ct += 1
         if ct == BLOCKING_K:
             ct = 0
@@ -124,7 +151,19 @@ def search(term):
     b = len(dictionary)
     i = int((a + b) / 2)
     while True:
-        ptr = dictionary[i][2]
+        j = i
+        ct = 0
+        while len(dictionary[j]) == 2:
+            j -= 1
+            ct += 1
+        pos = dictionary[j][2]
+        sz = dict_string[pos]
+        while ct != 0:
+            pos += (sz + 1)
+            sz = dict_string[pos]
+            ct -= 1
+        ptr = dict_string[pos + 1:pos + 1 + sz].decode('utf-8')
+
         if ptr == term:
             return i
         elif ptr < term:
@@ -132,7 +171,19 @@ def search(term):
         else:
             b = i - 1
         if a == b:
-            if dictionary[a][2] == term:
+            j = a
+            ct = 0
+            while len(dictionary[j]) == 2:
+                j -= 1
+                ct += 1
+            pos = dictionary[j][2]
+            sz = dict_string[pos]
+            while ct != 0:
+                pos += (sz + 1)
+                sz = dict_string[pos]
+                ct -= 1
+            ptr = dict_string[pos + 1:pos + 1 + sz].decode('utf-8')
+            if ptr == term:
                 return a
             else:
                 return None
@@ -147,11 +198,11 @@ def intersect(l1, l2):
     p2 = l2.head
     ret = LinkedList()
     while p1 and p2:
-        if p1.data == p2.data:
+        if vb_to_int(p1.data) == vb_to_int(p2.data):
             ret.append(p1.data)
             p1 = p1.next
             p2 = p2.next
-        elif p1.data < p2.data:
+        elif vb_to_int(p1.data) < vb_to_int(p2.data):
             p1 = p1.next
         else:
             p2 = p2.next
@@ -163,11 +214,11 @@ def merge(l1, l2):
     p2 = l2.head
     ret = LinkedList()
     while p1 and p2:
-        if p1.data == p2.data:
+        if vb_to_int(p1.data) == vb_to_int(p2.data):
             ret.append(p1.data)
             p1 = p1.next
             p2 = p2.next
-        elif p1.data < p2.data:
+        elif vb_to_int(p1.data) < vb_to_int(p2.data):
             ret.append(p1.data)
             p1 = p1.next
         else:
@@ -188,13 +239,13 @@ def inverse(l):
     p = l.head
     i = 0
     while p and i <= n:
-        if i < p.data:
-            ret.append(i)
+        if i < vb_to_int(p.data):
+            ret.append(int_to_vb(i))
         else:
             p = p.next
         i += 1
     while i <= n:
-        ret.append(i)
+        ret.append(int_to_vb(i))
         i += 1
 
     return ret
@@ -238,7 +289,7 @@ def query(option, terms):
     return answer
 
 
-save = True
+save = False
 
 if save:
     dictionary = []
@@ -272,7 +323,8 @@ if save:
 
             if term != cur_term:
                 # Frequency & Postings & Term
-                sub_string = bytes([len(term)]) + bytes(term.encode('utf-8'))
+                term_encoded = term.encode('utf-8')
+                sub_string = bytes([len(term_encoded)]) + term_encoded
                 dict_string += sub_string
                 if ct == 0:
                     dictionary.append([0, LinkedList(), ptr])
@@ -289,18 +341,18 @@ if save:
             if doc != prev_doc:
                 # Update dictionary, make sure no repeated doc
                 dictionary[cur_termId][0] += 1
-                dictionary[cur_termId][1].append(doc_to_docId[doc])
+                dictionary[cur_termId][1].append(int_to_vb(doc_to_docId[doc]))
             prev_doc = doc
     save_data()
 else:
     dictionary, docId_to_doc, doc_to_docId, dict_string = load_data()
 
-calc_size()
+# print(calc_size())
 
 # answer = query('and', 'Wednesday Thinking you')
 # answer = query('not', 'the')
 # answer = query('or', 'libya fuck')
 # answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
-# answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
+answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
-print()
+output(answer)
