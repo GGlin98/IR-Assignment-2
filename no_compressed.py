@@ -10,7 +10,7 @@ PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
 INPUT_DIR = 'HillaryEmails'
 FILE_TERM_DOC_PAIRS = 'output.txt'
-SAVE = True  # Save dictionary else load
+SAVE = True  # Save inverted_index else load
 
 
 def output(ll):
@@ -28,7 +28,7 @@ def output(ll):
 def calc_size():
     from sys import getsizeof
     sz = 0
-    for x in dictionary:
+    for x in inverted_index:
         sz += 2  # Frequency in 2 bytes
         sz += (6 + len(x[1]) * (4 + 3))  # 2 pointers (head & tail), data & next pointer for each element
         sz += getsizeof(x[2])
@@ -38,17 +38,17 @@ def calc_size():
 def save_data():
     with open('saved_data.pkl', 'wb') as f:
         dict_cp = []
-        for i in range(len(dictionary)):
-            dict_cp.append([dictionary[i][0], dictionary[i][1].to_list(), dictionary[i][2]])
+        for i in range(len(inverted_index)):
+            dict_cp.append([inverted_index[i][0], inverted_index[i][1].to_list(), inverted_index[i][2]])
         pickle.dump((dict_cp, docId_to_doc, doc_to_docId), f)
 
 
 def load_data():
     with open('saved_data.pkl', 'rb') as f:
-        dictionary, docId_to_doc, doc_to_docId = pickle.load(f)
-        for i in range(len(dictionary)):
-            dictionary[i][1] = LinkedList.from_list(dictionary[i][1])
-    return dictionary, docId_to_doc, doc_to_docId
+        inverted_index, docId_to_doc, doc_to_docId = pickle.load(f)
+        for i in range(len(inverted_index)):
+            inverted_index[i][1] = LinkedList.from_list(inverted_index[i][1])
+    return inverted_index, docId_to_doc, doc_to_docId
 
 
 def preprocess(terms):
@@ -82,10 +82,10 @@ def preprocess(terms):
 
 def search(term):
     a = 0
-    b = len(dictionary)
+    b = len(inverted_index)
     i = int((a + b) / 2)
     while True:
-        ptr = dictionary[i][2]
+        ptr = inverted_index[i][2]
         if ptr == term:
             return i
         elif ptr < term:
@@ -166,38 +166,38 @@ def query(option, terms):
         result = search(term)
         if result is not None:
             indexes.append(result)
-    indexes.sort(key=lambda i: dictionary[i][0])
+    indexes.sort(key=lambda i: inverted_index[i][0])
     if option == 'and':
         if len(indexes) < 2:
             # Only one matched
             return None
-        l1 = dictionary[indexes.pop(0)][1]
-        l2 = dictionary[indexes.pop(0)][1]
+        l1 = inverted_index[indexes.pop(0)][1]
+        l2 = inverted_index[indexes.pop(0)][1]
         answer = intersect(l1, l2)
         while indexes:
-            answer = intersect(answer, dictionary[indexes.pop(0)][1])
+            answer = intersect(answer, inverted_index[indexes.pop(0)][1])
     elif option == 'or':
         if len(indexes) < 1:
             # No matched
             return None
         elif len(indexes) == 1:
             # Skip merging
-            return dictionary[indexes.pop(0)][1]
-        l1 = dictionary[indexes.pop(0)][1]
-        l2 = dictionary[indexes.pop(0)][1]
+            return inverted_index[indexes.pop(0)][1]
+        l1 = inverted_index[indexes.pop(0)][1]
+        l2 = inverted_index[indexes.pop(0)][1]
         answer = merge(l1, l2)
         while indexes:
-            answer = merge(answer, dictionary[indexes.pop(0)][1])
+            answer = merge(answer, inverted_index[indexes.pop(0)][1])
     elif option == 'not':
         if len(terms) != 1:
             return None
-        answer = inverse(dictionary[indexes.pop(0)][1])
+        answer = inverse(inverted_index[indexes.pop(0)][1])
 
     return answer
 
 
 if SAVE:
-    dictionary = []
+    inverted_index = []
     docId_to_doc = {}
     doc_to_docId = {}
     doc_index = 0
@@ -225,19 +225,19 @@ if SAVE:
 
             if term != cur_term:
                 # Frequency & Postings & Term
-                dictionary.append([0, LinkedList(), term])
+                inverted_index.append([0, LinkedList(), term])
                 cur_term = term
                 cur_termId += 1
                 prev_doc = ''
 
             if doc != prev_doc:
-                # Update dictionary, make sure no repeated doc
-                dictionary[cur_termId][0] += 1
-                dictionary[cur_termId][1].append(doc_to_docId[doc])
+                # Update inverted index, make sure no repeated doc
+                inverted_index[cur_termId][0] += 1
+                inverted_index[cur_termId][1].append(doc_to_docId[doc])
             prev_doc = doc
     save_data()
 else:
-    dictionary, docId_to_doc, doc_to_docId = load_data()
+    inverted_index, docId_to_doc, doc_to_docId = load_data()
 
 # calc_size()
 
