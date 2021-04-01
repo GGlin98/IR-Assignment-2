@@ -13,7 +13,7 @@ INPUT_DIR = 'HillaryEmails'
 
 
 def output(ll):
-    if ll is None:
+    if ll is None or len(ll) == 0:
         print('No matched document was found')
         return
 
@@ -172,24 +172,9 @@ def search(term):
         else:
             b = i - 1
         if a == b:
-            j = a
-            ct = 0
-            while len(dictionary[j]) == 2:
-                j -= 1
-                ct += 1
-            pos = dictionary[j][2]
-            sz = dict_string[pos]
-            while ct != 0:
-                pos += (sz + 1)
-                sz = dict_string[pos]
-                ct -= 1
-            ptr = dict_string[pos + 1:pos + 1 + sz].decode('utf-8')
-            if ptr == term:
-                return a
-            else:
-                return None
+            i = a
+            continue
         elif a > b:
-            # Possible?
             return None
         i = int((a + b) / 2)
 
@@ -351,7 +336,8 @@ else:
 # print(calc_size())
 
 ### Sample queries ###
-answer = query('and', 'cat dog')
+# answer = query('and', 'cat dog')
+answer = query('and', 'libya missile Gaddafi')
 # answer = query('or', 'cat dog')
 # answer = query('not', 'the')
 
