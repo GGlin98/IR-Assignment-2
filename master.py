@@ -54,9 +54,9 @@ def vb_to_int(vb):
 
 def save_data():
     with open('saved_data.pkl', 'wb') as f:
-        dict_cp = dictionary.copy()
-        for i in range(len(dict_cp)):
-            dict_cp[i][1] = dict_cp[i][1].to_list()
+        dict_cp = []
+        for i in range(len(dictionary)):
+            dict_cp.append([dictionary[i][0], dictionary[i][1].to_list(), dictionary[i][2]])
         pickle.dump((dict_cp, docId_to_doc, doc_to_docId), f)
 
 
@@ -267,4 +267,4 @@ answer = query('or', 'libya fuck')
 # answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 # answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
-print()
+print(answer)
