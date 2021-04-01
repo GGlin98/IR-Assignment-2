@@ -1,13 +1,28 @@
 import os
 import pickle
+from string import punctuation
 
 from nltk import word_tokenize, PorterStemmer
 
 from LinkedList import LinkedList
-from string import punctuation
 
 PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
+BLOCKING_K = 4
+
+
+def calc_size():
+    ct = 0
+    sz = len(dict_string)
+    for x in dictionary:
+        sz += 2  # Frequency in 2 bytes
+        sz += (6 + len(x[1]) * (4 + 3))  # 2 pointers (head & tail), data & next pointer for each element
+        if ct == 0:
+            sz += 3  # pointer to dict_string
+        ct += 1
+        if ct == BLOCKING_K:
+            ct = 0
+    return sz
 
 
 def bitstring_to_bytes(s):
@@ -53,19 +68,26 @@ def vb_to_int(vb):
 
 
 def save_data():
-    with open('saved_data.pkl', 'wb') as f:
+    with open('saved_data_compressed.pkl', 'wb') as f:
         dict_cp = []
+        ct = 0
         for i in range(len(dictionary)):
-            dict_cp.append([dictionary[i][0], dictionary[i][1].to_list(), dictionary[i][2]])
-        pickle.dump((dict_cp, docId_to_doc, doc_to_docId), f)
+            if ct == 0:
+                dict_cp.append([dictionary[i][0], dictionary[i][1].to_list(), dictionary[i][2]])
+            else:
+                dict_cp.append([dictionary[i][0], dictionary[i][1].to_list()])
+            ct += 1
+            if ct == BLOCKING_K:
+                ct = 0
+        pickle.dump((dict_cp, docId_to_doc, doc_to_docId, dict_string), f)
 
 
 def load_data():
-    with open('saved_data.pkl', 'rb') as f:
-        dictionary, docId_to_doc, doc_to_docId = pickle.load(f)
+    with open('saved_data_compressed.pkl', 'rb') as f:
+        dictionary, docId_to_doc, doc_to_docId, dict_string = pickle.load(f)
         for i in range(len(dictionary)):
             dictionary[i][1] = LinkedList.from_list(dictionary[i][1])
-    return dictionary, docId_to_doc, doc_to_docId
+    return dictionary, docId_to_doc, doc_to_docId, dict_string
 
 
 def preprocess(terms):
@@ -216,10 +238,13 @@ def query(option, terms):
     return answer
 
 
-save = False
+save = True
 
 if save:
     dictionary = []
+    dict_string = bytes(''.encode('utf-8'))
+    ct = 0
+    ptr = 0
     docId_to_doc = {}
     doc_to_docId = {}
     doc_index = 0
@@ -247,7 +272,16 @@ if save:
 
             if term != cur_term:
                 # Frequency & Postings & Term
-                dictionary.append([0, LinkedList(), term])
+                sub_string = bytes([len(term)]) + bytes(term.encode('utf-8'))
+                dict_string += sub_string
+                if ct == 0:
+                    dictionary.append([0, LinkedList(), ptr])
+                else:
+                    dictionary.append([0, LinkedList()])
+                ct += 1
+                if ct == BLOCKING_K:
+                    ct = 0
+                ptr += len(sub_string)
                 cur_term = term
                 cur_termId += 1
                 prev_doc = ''
@@ -259,12 +293,14 @@ if save:
             prev_doc = doc
     save_data()
 else:
-    dictionary, docId_to_doc, doc_to_docId = load_data()
+    dictionary, docId_to_doc, doc_to_docId, dict_string = load_data()
+
+calc_size()
 
 # answer = query('and', 'Wednesday Thinking you')
 # answer = query('not', 'the')
-answer = query('or', 'libya fuck')
+# answer = query('or', 'libya fuck')
 # answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 # answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
-print(answer)
+print()

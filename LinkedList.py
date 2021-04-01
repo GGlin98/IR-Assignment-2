@@ -13,6 +13,7 @@ class LinkedList:
     def __init__(self):
         self.head = None
         self.tail = None
+        self.length = 0
 
     def __repr__(self):
         node = self.head
@@ -22,6 +23,9 @@ class LinkedList:
             node = node.next
         nodes.append("None")
         return " -> ".join([str(node) for node in nodes])
+
+    def __len__(self):
+        return self.length
 
     # This function is defined in Linked List class
     # Appends a new node at the end.  This method is
@@ -47,6 +51,8 @@ class LinkedList:
 
         # 7. Set tail as new node
         self.tail = new_node
+
+        self.length += 1
 
     def to_list(self):
         ret = []
