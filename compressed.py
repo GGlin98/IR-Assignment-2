@@ -11,7 +11,7 @@ PORTER = PorterStemmer()
 BLOCKING_K = 4
 INPUT_DIR = 'HillaryEmails'
 FILE_TERM_DOC_PAIRS = 'output.txt'
-SAVE = True  # Save inverted_index else load
+SAVE = False  # Save inverted_index else load
 
 
 def output(ll):
@@ -249,8 +249,8 @@ def query(option, terms):
             indexes.append(result)
     indexes.sort(key=lambda i: inverted_index[i][0])
     if option == 'and':
-        if len(indexes) < 2:
-            # Only one matched
+        if len(indexes) < 2 or len(indexes) < len(terms):
+            # Only one matched or some terms not found
             return None
         l1 = inverted_index[indexes.pop(0)][1]
         l2 = inverted_index[indexes.pop(0)][1]
