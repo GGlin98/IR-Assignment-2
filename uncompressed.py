@@ -10,6 +10,7 @@ PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
 INPUT_DIR = 'HillaryEmails'
 FILE_TERM_DOC_PAIRS = 'output.txt'
+SAVE = True  # Save dictionary else load
 
 
 def output(ll):
@@ -195,9 +196,7 @@ def query(option, terms):
     return answer
 
 
-save = False
-
-if save:
+if SAVE:
     dictionary = []
     docId_to_doc = {}
     doc_to_docId = {}

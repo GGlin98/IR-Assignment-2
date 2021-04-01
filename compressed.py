@@ -11,6 +11,7 @@ PORTER = PorterStemmer()
 BLOCKING_K = 4
 INPUT_DIR = 'HillaryEmails'
 FILE_TERM_DOC_PAIRS = 'output.txt'
+SAVE = True  # Save dictionary else load
 
 
 def output(ll):
@@ -276,9 +277,7 @@ def query(option, terms):
     return answer
 
 
-save = False
-
-if save:
+if SAVE:
     dictionary = []
     dict_string = bytes(''.encode('utf-8'))
     ct = 0
