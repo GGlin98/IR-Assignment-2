@@ -8,6 +8,7 @@ from LinkedList import LinkedList
 
 PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
+INPUT_DIR = 'HillaryEmails'
 
 
 def output(ll):
@@ -207,7 +208,7 @@ if save:
     cur_termId = -1
     prev_doc = ''
 
-    for dirpath, dirnames, filenames in os.walk('HillaryEmails'):
+    for dirpath, dirnames, filenames in os.walk(INPUT_DIR):
         filenames.sort()
         for f in filenames:
             docId_to_doc[doc_index] = f
@@ -243,10 +244,9 @@ else:
 
 # calc_size()
 
-# answer = query('and', 'Wednesday Thinking you')
+### Sample queries ###
+answer = query('and', 'cat dog')
+# answer = query('or', 'cat dog')
 # answer = query('not', 'the')
-# answer = query('or', 'libya fuck')
-# answer = query('or', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
-answer = query('and', 'fasdjfklasjf;eoef gnerwklgn feio2p fuck')
 
 output(answer)
