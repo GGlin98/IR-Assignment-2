@@ -9,6 +9,7 @@ from LinkedList import LinkedList
 PUNCTUATION = punctuation + '-—'
 PORTER = PorterStemmer()
 INPUT_DIR = 'HillaryEmails'
+FILE_TERM_DOC_PAIRS = 'output.txt'
 
 
 def output(ll):
@@ -212,7 +213,7 @@ if save:
             doc_to_docId[f] = doc_index
             doc_index += 1
 
-    with open('output.txt', 'rt', encoding='utf-8') as f:
+    with open(FILE_TERM_DOC_PAIRS, 'rt', encoding='utf-8') as f:
         while True:
             line = f.readline()
             if line == '':
