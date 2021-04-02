@@ -11,7 +11,7 @@ PORTER = PorterStemmer()
 BLOCKING_K = 4
 INPUT_DIR = 'HillaryEmails'
 FILE_TERM_DOC_PAIRS = 'output.txt'
-SAVE = False  # Save inverted_index else load
+SAVE = True  # Save inverted_index else load
 
 
 def output(ll):
@@ -21,9 +21,13 @@ def output(ll):
 
     p = ll.head
     print('Found {} documents:'.format(len(ll)))
-    while p:
-        print(docId_to_doc[vb_to_int(p.data)])
-        p = p.next
+    if p:
+        ct = vb_to_int(p.data)
+        while p:
+            print(docId_to_doc[ct])
+            p = p.next
+            if p:
+                ct += vb_to_int(p.data)
 
 
 def calc_size():
@@ -184,39 +188,73 @@ def search(term):
 def intersect(l1, l2):
     p1 = l1.head
     p2 = l2.head
+    prev_doc_id = None
     ret = LinkedList()
+    if p1 and hasattr(p1, 'data'):
+        ct1 = vb_to_int(p1.data)
+    if p2 and hasattr(p2, 'data'):
+        ct2 = vb_to_int(p2.data)
     while p1 and p2:
-        if vb_to_int(p1.data) == vb_to_int(p2.data):
-            ret.append(p1.data)
+        if ct1 == ct2:
+            gap = ct1 if not prev_doc_id else ct1 - prev_doc_id
+            prev_doc_id = ct1
+            ret.append(int_to_vb(gap))
             p1 = p1.next
             p2 = p2.next
-        elif vb_to_int(p1.data) < vb_to_int(p2.data):
+            if p1 and p2:
+                ct1 += vb_to_int(p1.data)
+                ct2 += vb_to_int(p2.data)
+        elif ct1 < ct2:
             p1 = p1.next
+            if p1:
+                ct1 += vb_to_int(p1.data)
         else:
             p2 = p2.next
+            if p2:
+                ct2 += vb_to_int(p2.data)
     return ret
 
 
 def merge(l1, l2):
     p1 = l1.head
     p2 = l2.head
+    prev_doc_id = None
     ret = LinkedList()
+    if p1 and hasattr(p1, 'data'):
+        ct1 = vb_to_int(p1.data)
+    if p2 and hasattr(p2, 'data'):
+        ct2 = vb_to_int(p2.data)
     while p1 and p2:
-        if vb_to_int(p1.data) == vb_to_int(p2.data):
-            ret.append(p1.data)
+        if ct1 == ct2:
+            gap = ct1 if not prev_doc_id else ct1 - prev_doc_id
+            prev_doc_id = ct1
             p1 = p1.next
             p2 = p2.next
-        elif vb_to_int(p1.data) < vb_to_int(p2.data):
-            ret.append(p1.data)
+            if p1 and p2:
+                ct1 += vb_to_int(p1.data)
+                ct2 += vb_to_int(p2.data)
+        elif ct1 < ct2:
+            gap = ct1 if not prev_doc_id else ct1 - prev_doc_id
+            prev_doc_id = ct1
             p1 = p1.next
+            if p1:
+                ct1 += vb_to_int(p1.data)
         else:
-            ret.append(p2.data)
+            gap = ct2 if not prev_doc_id else ct2 - prev_doc_id
+            prev_doc_id = ct2
             p2 = p2.next
+            if p2:
+                ct2 += vb_to_int(p2.data)
+        ret.append(int_to_vb(gap))
     while p1:
-        ret.append(p1.data)
+        gap = ct1 if not prev_doc_id else ct1 - prev_doc_id
+        prev_doc_id = ct1
+        ret.append(int_to_vb(gap))
         p1 = p1.next
     while p2:
-        ret.append(p2.data)
+        gap = ct2 if not prev_doc_id else ct2 - prev_doc_id
+        prev_doc_id = ct2
+        ret.append(int_to_vb(gap))
         p2 = p2.next
     return ret
 
@@ -226,14 +264,21 @@ def inverse(l):
     n = len(docId_to_doc) - 1
     p = l.head
     i = 0
+    prev_doc_id = None
+    if p and hasattr(p, 'data'):
+        ct = vb_to_int(p.data)
     while p and i <= n:
-        if i < vb_to_int(p.data):
-            ret.append(int_to_vb(i))
+        if i < ct:
+            gap = i if not prev_doc_id else i - prev_doc_id
+            prev_doc_id = i
+            ret.append(int_to_vb(gap))
         else:
             p = p.next
         i += 1
     while i <= n:
-        ret.append(int_to_vb(i))
+        gap = i if not prev_doc_id else i - prev_doc_id
+        prev_doc_id = i
+        ret.append(int_to_vb(gap))
         i += 1
 
     return ret
@@ -327,7 +372,12 @@ if SAVE:
             if doc != prev_doc:
                 # Update inverted index, make sure no repeated doc
                 inverted_index[cur_termId][0] += 1
-                inverted_index[cur_termId][1].append(int_to_vb(doc_to_docId[doc]))
+                # Variable-length Gap Encoding
+                if prev_doc == '':
+                    gap = doc_to_docId[doc]
+                else:
+                    gap = doc_to_docId[doc] - doc_to_docId[prev_doc]
+                inverted_index[cur_termId][1].append(int_to_vb(gap))
             prev_doc = doc
     save_data()
 else:
